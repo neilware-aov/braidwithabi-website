@@ -3,9 +3,11 @@
 import "server-only";
 import { Resend } from "resend";
 
-const FROM = process.env.EMAIL_FROM || "Braid with Abi <bookings@braidwithabi.ca>";
-const REPLY_TO = process.env.EMAIL_REPLY_TO || "hello@braidwithabi.ca";
-export const OWNER_EMAIL = process.env.OWNER_EMAIL || REPLY_TO;
+// One address for everything: emails are sent from it, client replies go to
+// it, and Abi's "new booking" emails arrive there.
+export const BUSINESS_EMAIL = process.env.BUSINESS_EMAIL || "services@braidwithabi.ca";
+const FROM = `Braid with Abi <${BUSINESS_EMAIL}>`;
+const REPLY_TO = BUSINESS_EMAIL;
 
 let resend: Resend | null = null;
 

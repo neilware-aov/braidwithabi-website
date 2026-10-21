@@ -4,6 +4,7 @@
 import "server-only";
 import webpush from "web-push";
 import { deletePushSubscription, getPushSubscriptions } from "./db";
+import { BUSINESS_EMAIL } from "./email";
 
 let vapidReady = false;
 function setupVapid() {
@@ -11,7 +12,7 @@ function setupVapid() {
   const pub = process.env.VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
   if (!pub || !priv) return false;
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT || "mailto:hello@braidwithabi.ca", pub, priv);
+  webpush.setVapidDetails(`mailto:${BUSINESS_EMAIL}`, pub, priv);
   vapidReady = true;
   return true;
 }

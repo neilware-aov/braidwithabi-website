@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSlotOpen, quote } from "@/lib/availability";
 import { getBusy, getSettings, getStyle, insertBooking, SlotTakenError } from "@/lib/db";
-import { OWNER_EMAIL, sendEmail } from "@/lib/email";
+import { BUSINESS_EMAIL, sendEmail } from "@/lib/email";
 import { clientBookingReceived, manageUrl, ownerNewBooking } from "@/lib/emailTemplates";
 import { firstName } from "@/lib/format";
 import { bookingSpam } from "@/lib/limits";
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     const toOwner = ownerNewBooking(booking, settings);
     await Promise.all([
       sendEmail({ to: email, ...toClient }),
-      sendEmail({ to: settings.owner_email || OWNER_EMAIL, ...toOwner, replyTo: email }),
+      sendEmail({ to: BUSINESS_EMAIL, ...toOwner, replyTo: email }),
       notifyOwner(
         "New booking 🎉",
         `${firstName(name)} · ${style.name} · ${start.toFormat("ccc LLL d, h:mm a")}`,

@@ -15,7 +15,6 @@ export interface Settings {
   reschedule_cutoff_hours: number;
   working_hours: WorkingHours;
   address_details: string;
-  owner_email: string;
   accepting_bookings: boolean;
 }
 

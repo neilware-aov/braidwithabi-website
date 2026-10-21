@@ -77,13 +77,6 @@ export default function Payments() {
             <NumberField label="Break between" suffix="min" value={form.buffer_minutes} onChange={(n) => set({ buffer_minutes: n ?? 0 })} hint="clients" />
             <NumberField label="Free changes until" suffix="hrs" value={form.reschedule_cutoff_hours} onChange={(n) => set({ reschedule_cutoff_hours: n ?? 48 })} hint="before the appointment" />
           </View>
-          <Field
-            label="Email me new bookings at"
-            value={form.owner_email}
-            onChangeText={(owner_email) => set({ owner_email })}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
         </Section>
       ) : (
         <Button kind="ghost" label="More options" icon="chevron-down" style={{ marginTop: 16 }} onPress={() => setMore(true)} />

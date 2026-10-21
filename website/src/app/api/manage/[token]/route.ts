@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { NextResponse, type NextRequest } from "next/server";
 import { isSlotOpen } from "@/lib/availability";
 import { getBookingByToken, getBusy, getSettings, SlotTakenError, updateBooking } from "@/lib/db";
-import { OWNER_EMAIL, sendEmail } from "@/lib/email";
+import { BUSINESS_EMAIL, sendEmail } from "@/lib/email";
 import { clientCancelled, clientRescheduled, ownerClientChange } from "@/lib/emailTemplates";
 import { firstName } from "@/lib/format";
 import { manageSpam } from "@/lib/limits";
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
     const updated = await updateBooking(booking.id, { status: "cancelled", cancelled_by: "client" });
     await Promise.all([
       updated.client_email && sendEmail({ to: updated.client_email, ...clientCancelled(updated, settings, true) }),
-      sendEmail({ to: settings.owner_email || OWNER_EMAIL, ...ownerClientChange(updated, settings, "cancelled") }),
+      sendEmail({ to: BUSINESS_EMAIL, ...ownerClientChange(updated, settings, "cancelled") }),
       notifyOwner("Booking cancelled", `${firstName(updated.client_name)} cancelled ${updated.style_name}`, {
         bookingId: updated.id,
       }),
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
       });
       await Promise.all([
         updated.client_email && sendEmail({ to: updated.client_email, ...clientRescheduled(updated, settings) }),
-        sendEmail({ to: settings.owner_email || OWNER_EMAIL, ...ownerClientChange(updated, settings, "rescheduled") }),
+        sendEmail({ to: BUSINESS_EMAIL, ...ownerClientChange(updated, settings, "rescheduled") }),
         notifyOwner(
           "Booking rescheduled",
           `${firstName(updated.client_name)} moved to ${start.toFormat("ccc LLL d, h:mm a")}`,

@@ -21,7 +21,7 @@ export const contact = {
   facebook: "", // Facebook page username → opens Messenger
   snapchat: "",
   phone: "+1 (416) 555-0123", // for "Text me"
-  email: "hello@braidwithabi.ca",
+  email: "services@braidwithabi.ca",
 };
 
 export type ChatLink = { id: string; label: string; handle: string; href: string };
