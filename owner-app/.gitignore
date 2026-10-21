@@ -46,3 +46,8 @@ dist
 # app settings with the private key
 .env
 .claude
+
+# Firebase / Google files (uploaded to EAS instead, see README)
+google-services.json
+GoogleService-Info.plist
+*service-account*.json
