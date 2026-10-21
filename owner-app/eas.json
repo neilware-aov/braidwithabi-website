@@ -1,0 +1,20 @@
+{
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_SITE_URL": "https://braidwithabi.ca",
+        "EXPO_PUBLIC_OWNER_KEY": "SAME_VALUE_AS_OWNER_KEY_ON_THE_WEBSITE",
+        "EXPO_PUBLIC_VAPID_PUBLIC_KEY": "BMDZPUeze6jE-hgQTjY_d65w41G-AZWijZsKR2HvW7uZuGFKHuTJLk1VFxOLy0bLeKDc0qOVTsHUSnl_2JdFfds"
+      }
+    }
+  }
+}
