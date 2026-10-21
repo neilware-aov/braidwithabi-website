@@ -151,7 +151,7 @@ export default function NewBooking() {
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
-          hint="If you add it, she gets the booking details and reminders by email."
+          hint="If you add it, the client gets the booking details and reminders by email."
         />
         <Field label="Notes (optional)" value={notes} onChangeText={setNotes} multiline />
         <SwitchRow label={`Deposit already received (${money(deposit)})`} value={paid} onChange={setPaid} />

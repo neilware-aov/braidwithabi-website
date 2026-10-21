@@ -74,7 +74,7 @@ export function Policies() {
         <p className="eyebrow">Good to know</p>
         <h2 className="mt-3 font-display text-5xl italic">Policies</h2>
         <p className="mt-4 text-[1.05rem] text-muted">
-          A few simple rules so every client gets the time and care she deserves.
+          A few simple rules so you get the time and care you deserve.
         </p>
       </div>
       <div className="mt-12 grid gap-5 md:grid-cols-2">
