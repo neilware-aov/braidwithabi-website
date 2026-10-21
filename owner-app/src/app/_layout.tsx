@@ -4,12 +4,14 @@ import {
 } from "@expo-google-fonts/cormorant-garamond";
 import { Jost_300Light, Jost_400Regular, Jost_500Medium } from "@expo-google-fonts/jost";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Platform, Text, View } from "react-native";
-import { getSettings, isConfigured } from "@/lib/api";
+import { Button, Field, T } from "@/components/ui";
+import { getSettings, getStatus, isConfigured } from "@/lib/api";
+import { canPair, keepKeyInAddress, onKeyChange, ownerKey, parseSetupLink, setOwnerKey } from "@/lib/ownerKey";
 import { listenForNotifications, refreshPushRegistration, registerServiceWorker } from "@/lib/push";
 import { colors, fonts } from "@/lib/theme";
 import { setTimezone } from "@/lib/tz";
@@ -31,13 +33,60 @@ if (Platform.OS === "web" && typeof document !== "undefined" && !document.getEle
   registerServiceWorker();
 }
 
-function AlertEffects() {
+function AppEffects() {
+  const pathname = usePathname();
   useEffect(() => {
     getSettings().then((s) => setTimezone(s.timezone)).catch(() => {});
     refreshPushRegistration();
     return listenForNotifications();
   }, []);
+  useEffect(() => keepKeyInAddress(), [pathname]);
   return null;
+}
+
+/** First open on a new phone: connect it with the private setup link. */
+function Connect() {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function connect() {
+    const k = parseSetupLink(text);
+    if (!k) return setError("That doesn't look like your setup link. Copy the whole link and try again.");
+    setBusy(true);
+    setError(null);
+    setOwnerKey(k);
+    try {
+      await getStatus(); // checks the key with the website
+    } catch (e: any) {
+      setError(e?.message ?? "Couldn't connect.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.cream, justifyContent: "center", padding: 28 }}>
+      <View style={{ width: "100%", maxWidth: 440, alignSelf: "center" }}>
+        <Text style={{ fontFamily: fonts.displayItalic, fontSize: 38, color: colors.ink }}>Braid with Abi</Text>
+        <Text style={{ fontFamily: fonts.display, fontSize: 24, color: colors.ink, marginTop: 18 }}>Connect this phone</Text>
+        {canPair ? (
+          <>
+            <T variant="muted" style={{ marginTop: 6, marginBottom: 18 }}>
+              Open the private setup link you were sent, or paste it here. You only do this once.
+            </T>
+            <Field label="Setup link" value={text} onChangeText={setText} autoCapitalize="none" autoCorrect={false} placeholder="https://…#key=…" />
+            {error ? <T style={{ color: colors.red, marginBottom: 12 }}>{error}</T> : null}
+            <Button label="Connect" onPress={connect} loading={busy} disabled={!text.trim()} />
+          </>
+        ) : (
+          <T variant="muted" style={{ marginTop: 6 }}>
+            This app was built without its private key. Rebuild it with EXPO_PUBLIC_OWNER_KEY set (see README).
+          </T>
+        )}
+      </View>
+    </View>
+  );
 }
 
 /** Shown only if the app was built without the website address / key. */
@@ -48,7 +97,7 @@ function NotSetUp() {
         Almost ready
       </Text>
       <Text style={{ fontFamily: fonts.regular, fontSize: 16, color: colors.muted, textAlign: "center", marginTop: 8 }}>
-        This app needs EXPO_PUBLIC_SITE_URL and EXPO_PUBLIC_OWNER_KEY (see README).
+        This app needs EXPO_PUBLIC_SITE_URL (see README).
       </Text>
     </View>
   );
@@ -65,6 +114,8 @@ export default function RootLayout() {
   // Never get stuck on a blank screen: if fonts are slow or fail (some mobile
   // browsers), show the app anyway with fallback fonts after a few seconds.
   const [gaveUp, setGaveUp] = useState(false);
+  const [hasKey, setHasKey] = useState(() => !!ownerKey());
+  useEffect(() => onKeyChange(() => setHasKey(!!ownerKey())), []);
   useEffect(() => {
     const t = setTimeout(() => setGaveUp(true), 3000);
     return () => clearTimeout(t);
@@ -81,11 +132,12 @@ export default function RootLayout() {
   if (!ready) return null;
 
   if (!isConfigured) return <NotSetUp />;
+  if (!hasKey) return <Connect />;
 
   return (
     <>
       <StatusBar style="dark" />
-      <AlertEffects />
+      <AppEffects />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.cream } }} />
     </>
   );

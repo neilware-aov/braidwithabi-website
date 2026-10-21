@@ -1,11 +1,11 @@
 // Talks to the website (braidwithabi.ca/api/owner/…). No login — the app
-// carries a private key that matches OWNER_KEY on the website.
+// sends a private key that matches OWNER_KEY on the website (see ownerKey.ts).
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
+import { forgetOwnerKey, ownerKey } from "./ownerKey";
 import type { Booking, Settings, Status, Style, TimeOff } from "./types";
 
 export const SITE_URL = (process.env.EXPO_PUBLIC_SITE_URL ?? "").replace(/\/$/, "");
-const OWNER_KEY = process.env.EXPO_PUBLIC_OWNER_KEY ?? "";
-export const isConfigured = !!SITE_URL && !!OWNER_KEY;
+export const isConfigured = !!SITE_URL;
 
 /** Style photos can live on the website ("/images/…") or be full URLs. */
 export const imageUrl = (u: string) => (u.startsWith("/") ? SITE_URL + u : u);
@@ -17,13 +17,14 @@ async function call<T>(path: string, method = "GET", body?: unknown): Promise<T>
   try {
     res = await fetch(`${SITE_URL}/api/owner/${path}`, {
       method,
-      headers: { Authorization: `Bearer ${OWNER_KEY}`, "Content-Type": "application/json" },
+      headers: { Authorization: `Bearer ${ownerKey()}`, "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
   } catch {
     throw new Error("Can't reach your website. Check your internet connection and try again.");
   }
   const json = await res.json().catch(() => null);
+  if (res.status === 401) forgetOwnerKey(); // wrong or changed key → ask for the setup link again
   if (!res.ok) {
     const msg = json?.error ?? `Something went wrong (${res.status}).`;
     throw res.status === 409 ? new OverlapError(msg) : new Error(msg);
