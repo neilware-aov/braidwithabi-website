@@ -6,11 +6,12 @@ import { addTimeOff, deleteTimeOff, listTimeOff } from "@/lib/api";
 import { addDays, dateShort, dayKey, startOfDay } from "@/lib/format";
 import { colors } from "@/lib/theme";
 import { useLoad } from "@/lib/useLoad";
+import { fromWall, nowWall, wall } from "@/lib/tz";
 
 export default function DaysOff() {
   const { data, error } = useLoad(listTimeOff);
   const [adding, setAdding] = useState(false);
-  const [month, setMonth] = useState(new Date());
+  const [month, setMonth] = useState(nowWall());
   const [from, setFrom] = useState<Date | null>(null);
   const [to, setTo] = useState<Date | null>(null);
   const [reason, setReason] = useState("");
@@ -28,8 +29,8 @@ export default function DaysOff() {
     setSaving(true);
     try {
       await addTimeOff({
-        starts_at: startOfDay(from).toISOString(),
-        ends_at: addDays(startOfDay(to ?? from), 1).toISOString(),
+        starts_at: fromWall(startOfDay(from)).toISOString(),
+        ends_at: fromWall(addDays(startOfDay(to ?? from), 1)).toISOString(),
         reason: reason.trim() || "Day off",
       });
       setAdding(false);
@@ -51,7 +52,7 @@ export default function DaysOff() {
       {adding ? (
         <Card style={{ marginTop: 6 }}>
           <T style={{ marginBottom: 8 }}>Tap the first day, then the last day (or just one day).</T>
-          <MonthGrid month={month} onMonth={setMonth} selected={to ?? from} onSelect={pick} minDate={new Date()} off={new Set(rangeKeys(from, to))} />
+          <MonthGrid month={month} onMonth={setMonth} selected={to ?? from} onSelect={pick} minDate={nowWall()} off={new Set(rangeKeys(from, to))} />
           <View style={{ marginTop: 12 }}>
             <Field label="Note (only you see this)" value={reason} onChangeText={setReason} placeholder="Vacation" />
             <T variant="strong" style={{ marginBottom: 12 }}>
@@ -72,8 +73,8 @@ export default function DaysOff() {
         {data?.length ? (
           <Card style={{ padding: 0, overflow: "hidden" }}>
             {data.map((t, i) => {
-              const s = new Date(t.starts_at);
-              const e = addDays(new Date(t.ends_at), -1);
+              const s = wall(t.starts_at);
+              const e = addDays(wall(t.ends_at), -1);
               const label = s.toDateString() === e.toDateString() || e < s ? dateShort(s) : `${dateShort(s)} → ${dateShort(e)}`;
               return (
                 <View key={t.id} style={{ borderTopWidth: i ? 1 : 0, borderTopColor: colors.line }}>

@@ -7,6 +7,7 @@ import { createBooking, getSettings, listBookings, listStyles, OverlapError } fr
 import { addDays, duration, money, startOfDay } from "@/lib/format";
 import { at, busyStarts } from "@/lib/slots";
 import { useLoad } from "@/lib/useLoad";
+import { fromWall, nowWall } from "@/lib/tz";
 
 /** For bookings that come in by DM, text or phone. */
 export default function NewBooking() {
@@ -18,7 +19,7 @@ export default function NewBooking() {
   const [styleId, setStyleId] = useState<string | null>(null);
   const [variant, setVariant] = useState<string | null>(null);
   const [blowDry, setBlowDry] = useState(false);
-  const [day, setDay] = useState<Date>(startOfDay(new Date()));
+  const [day, setDay] = useState<Date>(startOfDay(nowWall()));
   const [time, setTime] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -38,7 +39,10 @@ export default function NewBooking() {
 
   useEffect(() => setPrice(null), [styleId, variant, blowDry]);
 
-  const { data: dayBookings } = useLoad(() => listBookings(day.toISOString(), addDays(day, 1).toISOString()), [day.getTime()]);
+  const { data: dayBookings } = useLoad(
+    () => listBookings(fromWall(day).toISOString(), fromWall(addDays(day, 1)).toISOString()),
+    [day.getTime()]
+  );
   const busy = minutes ? busyStarts(dayBookings ?? [], day, minutes) : new Set<string>();
 
   if (!data || !settings) return <Screen back title="New appointment"><Loading /></Screen>;
@@ -62,7 +66,7 @@ export default function NewBooking() {
         style_id: style.id,
         variant_label: v?.label ?? null,
         blow_dry: blowDry,
-        starts_at: at(day, time).toISOString(),
+        starts_at: fromWall(at(day, time)).toISOString(),
         price_total: price ?? autoPrice,
         client_name: name.trim(),
         client_phone: phone.trim(),

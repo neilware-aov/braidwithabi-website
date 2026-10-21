@@ -4,10 +4,11 @@ import { duration, minutesBetween, money, time12 } from "@/lib/format";
 import { colors, fonts, radius } from "@/lib/theme";
 import type { Booking } from "@/lib/types";
 import { Badge } from "./ui";
+import { wall } from "@/lib/tz";
 
 /** One appointment in a list. Tap to open it. */
 export default function BookingCard({ b }: { b: Booking }) {
-  const start = new Date(b.starts_at);
+  const start = wall(b.starts_at);
   const faded = b.status === "cancelled";
   return (
     <Pressable

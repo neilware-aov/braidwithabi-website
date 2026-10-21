@@ -22,12 +22,13 @@ import { getPushState } from "@/lib/push";
 import { colors, fonts, radius } from "@/lib/theme";
 import type { Booking } from "@/lib/types";
 import { useLoad } from "@/lib/useLoad";
+import { fromWall, nowWall, wall } from "@/lib/tz";
 
 export default function Appointments() {
-  const today = startOfDay(new Date());
+  const today = startOfDay(nowWall());
   const from = new Date(Math.min(startOfMonth(today).getTime(), addDays(today, -60).getTime()));
   const { data, error, refreshing, reload, refresh } = useLoad(() =>
-    listBookings(from.toISOString(), addDays(today, 200).toISOString())
+    listBookings(fromWall(from).toISOString(), fromWall(addDays(today, 200)).toISOString())
   );
   const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
   const [alertsOff, setAlertsOff] = useState(false);
@@ -50,13 +51,13 @@ export default function Appointments() {
   const history = all.filter((b) => b.status !== "booked").reverse();
 
   const made = (since: Date) =>
-    all.filter((b) => b.status === "done" && new Date(b.starts_at) >= since).reduce((sum, b) => sum + b.price_total, 0);
+    all.filter((b) => b.status === "done" && wall(b.starts_at) >= since).reduce((sum, b) => sum + b.price_total, 0);
 
   return (
     <Screen refreshing={refreshing} onRefresh={reload}>
       <View style={st.head}>
         <View style={{ flex: 1 }}>
-          <Text style={st.date}>{dateLong(new Date()).toUpperCase()}</Text>
+          <Text style={st.date}>{dateLong(today).toUpperCase()}</Text>
           <Text style={st.hello}>{greeting()}, Abi</Text>
         </View>
         <Pressable onPress={() => router.push("/booking/new")} style={st.add} accessibilityLabel="Add an appointment">
@@ -136,7 +137,7 @@ function MoneyBox({ label, value }: { label: string; value: string }) {
 function DayGroups({ list }: { list: Booking[] }) {
   const groups: Array<{ key: string; day: Date; items: Booking[] }> = [];
   for (const b of list) {
-    const d = new Date(b.starts_at);
+    const d = wall(b.starts_at);
     const key = dayKey(d);
     const last = groups[groups.length - 1];
     if (last?.key === key) last.items.push(b);
@@ -174,7 +175,7 @@ function Answer({ b }: { b: Booking }) {
       setBusy(null);
     }
   }
-  const start = new Date(b.starts_at);
+  const start = wall(b.starts_at);
   return (
     <View style={st.answer}>
       <Pressable onPress={() => router.push(`/booking/${b.id}`)}>

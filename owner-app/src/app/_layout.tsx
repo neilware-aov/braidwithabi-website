@@ -9,9 +9,10 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Platform, Text, View } from "react-native";
-import { isConfigured } from "@/lib/api";
+import { getSettings, isConfigured } from "@/lib/api";
 import { listenForNotifications, refreshPushRegistration, registerServiceWorker } from "@/lib/push";
 import { colors, fonts } from "@/lib/theme";
+import { setTimezone } from "@/lib/tz";
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -32,6 +33,7 @@ if (Platform.OS === "web" && typeof document !== "undefined" && !document.getEle
 
 function AlertEffects() {
   useEffect(() => {
+    getSettings().then((s) => setTimezone(s.timezone)).catch(() => {});
     refreshPushRegistration();
     return listenForNotifications();
   }, []);

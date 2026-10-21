@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { hhmm12 } from "@/lib/format";
 import { colors, fonts, radius } from "@/lib/theme";
+import { nowWall } from "@/lib/tz";
 
 const toMin = (t: string) => {
   const [h, m] = t.split(":").map(Number);
@@ -59,7 +60,7 @@ export function TimeGrid({
 }
 
 /** Horizontal strip of upcoming days. */
-export function DayStrip({ value, onChange, days = 90, start = new Date() }: { value: Date | null; onChange: (d: Date) => void; days?: number; start?: Date }) {
+export function DayStrip({ value, onChange, days = 90, start = nowWall() }: { value: Date | null; onChange: (d: Date) => void; days?: number; start?: Date }) {
   const first = new Date(start.getFullYear(), start.getMonth(), start.getDate());
   const list = Array.from({ length: days }, (_, i) => new Date(first.getFullYear(), first.getMonth(), first.getDate() + i));
   const W = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

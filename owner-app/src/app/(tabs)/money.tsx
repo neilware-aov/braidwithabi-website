@@ -8,13 +8,14 @@ import { addDays, addMonths, dateShort, firstName, money, monthName, startOfMont
 import { colors, fonts, radius } from "@/lib/theme";
 import type { Booking } from "@/lib/types";
 import { useLoad } from "@/lib/useLoad";
+import { fromWall, nowWall, wall } from "@/lib/tz";
 
 type Mode = "week" | "month";
 const BARS = 6;
 
 /** Start of the period `offset` steps away from now (0 = this week / month). */
 function periodStart(mode: Mode, offset: number) {
-  const now = new Date();
+  const now = nowWall();
   return mode === "week" ? addDays(startOfWeek(now), offset * 7) : addMonths(startOfMonth(now), offset);
 }
 const periodEnd = (mode: Mode, start: Date) => (mode === "week" ? addDays(start, 7) : addMonths(start, 1));
@@ -35,12 +36,12 @@ export default function MoneyScreen() {
   const selStart = periodStart(mode, offset);
   const selEnd = periodEnd(mode, selStart);
   const { data, error, refreshing, reload } = useLoad(
-    () => listBookings(first.toISOString(), selEnd.toISOString()),
+    () => listBookings(fromWall(first).toISOString(), fromWall(selEnd).toISOString()),
     [mode, offset]
   );
 
   const inPeriod = (b: Booking, start: Date) => {
-    const t = Date.parse(b.starts_at);
+    const t = wall(b.starts_at).getTime();
     return t >= start.getTime() && t < periodEnd(mode, start).getTime();
   };
   const all = data ?? [];
@@ -143,7 +144,7 @@ export default function MoneyScreen() {
                     <Text style={st.rowName}>
                       {firstName(b.client_name)} · {b.style_name}
                     </Text>
-                    <Text style={st.rowMeta}>{dateShort(new Date(b.starts_at))}</Text>
+                    <Text style={st.rowMeta}>{dateShort(wall(b.starts_at))}</Text>
                   </View>
                   <Text style={st.rowPrice}>{money(b.price_total)}</Text>
                 </Pressable>

@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { dayKey, monthName, sameDay } from "@/lib/format";
 import { colors, fonts } from "@/lib/theme";
+import { nowWall } from "@/lib/tz";
 
 /** Month calendar. `marks` maps "yyyy-mm-dd" → number of appointments; `off` are blocked days. */
 export default function MonthGrid({
@@ -28,7 +29,7 @@ export default function MonthGrid({
     ...Array.from({ length: days }, (_, i) => new Date(month.getFullYear(), month.getMonth(), i + 1)),
   ];
   while (cells.length % 7) cells.push(null);
-  const today = new Date();
+  const today = nowWall();
 
   return (
     <View>

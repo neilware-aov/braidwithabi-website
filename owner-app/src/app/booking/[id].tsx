@@ -7,6 +7,7 @@ import { cancelBooking, deleteBooking, getBooking, markBooked, markDone, saveNot
 import { dateLong, duration, firstName, minutesBetween, money, relativeDay, time12 } from "@/lib/format";
 import { colors, fonts } from "@/lib/theme";
 import { useLoad } from "@/lib/useLoad";
+import { wall } from "@/lib/tz";
 
 export default function BookingDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,12 +18,12 @@ export default function BookingDetail() {
   if (error) return <Screen back title="Appointment"><ErrorNote message={error} /></Screen>;
   if (!b) return <Screen back title="Appointment"><Loading /></Screen>;
 
-  const start = new Date(b.starts_at);
-  const end = new Date(b.ends_at);
+  const start = wall(b.starts_at);
+  const end = wall(b.ends_at);
   const now = Date.now();
   const booked = b.status === "booked";
-  const isPast = end.getTime() < now;
-  const startedOrToday = start.getTime() < now || relativeDay(start) === "Today";
+  const isPast = Date.parse(b.ends_at) < now;
+  const startedOrToday = Date.parse(b.starts_at) < now || relativeDay(start) === "Today";
   const digits = b.client_phone.replace(/\D/g, "");
   const name = firstName(b.client_name);
 

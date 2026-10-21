@@ -1,6 +1,8 @@
-// Small date helpers in the device's local time (Abi's phone is in the
-// business timezone). Hand-rolled names so output is identical on Android,
-// iPhone Safari and desktop browsers.
+// Small date helpers. Dates passed in are on the business's clock (see
+// tz.ts). Hand-rolled names so output is identical on Android, iPhone Safari
+// and desktop browsers.
+import { nowWall } from "./tz";
+
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
@@ -40,7 +42,7 @@ export function dayKey(d: Date) {
 }
 
 export function relativeDay(d: Date) {
-  const today = startOfDay(new Date());
+  const today = startOfDay(nowWall());
   const diff = Math.round((startOfDay(d).getTime() - today.getTime()) / 86_400_000);
   if (diff === 0) return "Today";
   if (diff === 1) return "Tomorrow";
@@ -75,7 +77,7 @@ export const minutesBetween = (a: string, b: string) => Math.round((Date.parse(b
 export const firstName = (n: string) => n.trim().split(/\s+/)[0] || n;
 
 export function greeting() {
-  const h = new Date().getHours();
+  const h = nowWall().getHours();
   return h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
 }
 
