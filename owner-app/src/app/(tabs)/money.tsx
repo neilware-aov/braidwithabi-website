@@ -102,6 +102,9 @@ export default function MoneyScreen() {
 
         {/* Simple bar chart of the last few weeks / months. Tap a bar to see it. */}
         <View style={st.chart}>
+          {bars.every((b) => !b.total) ? (
+            <Text style={st.chartEmpty}>Mark appointments as done and your earnings show up here.</Text>
+          ) : null}
           {bars.map((b) => {
             const sel = b.o === offset;
             return (
@@ -177,6 +180,16 @@ const st = StyleSheet.create({
   bigSub: { fontFamily: fonts.regular, fontSize: 15, color: colors.muted, textAlign: "center" },
   extra: { fontFamily: fonts.regular, fontSize: 14, color: colors.amber, textAlign: "center", marginTop: 6 },
   chart: { flexDirection: "row", gap: 6, height: 160, marginTop: 22, alignItems: "flex-end" },
+  chartEmpty: {
+    position: "absolute",
+    top: 40,
+    left: 24,
+    right: 24,
+    textAlign: "center",
+    fontFamily: fonts.light,
+    fontSize: 14,
+    color: colors.muted,
+  },
   barCol: { flex: 1, height: "100%", alignItems: "center" },
   barValue: { fontFamily: fonts.light, fontSize: 10.5, color: colors.muted, height: 16 },
   barTrack: { flex: 1, width: "70%", justifyContent: "flex-end" },

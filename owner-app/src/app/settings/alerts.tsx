@@ -53,7 +53,7 @@ export default function Alerts() {
               : state === "blocked"
                 ? "Alerts are blocked"
                 : state === "unsupported"
-                  ? "Not available here"
+                  ? "Alerts need the real app"
                   : "Alerts are off"}
         </Text>
         <T variant="muted" style={{ marginTop: 4 }}>You'll get an alert:</T>
@@ -64,6 +64,13 @@ export default function Alerts() {
         {state === "available" ? <Button label="Turn on alerts" icon="notifications" onPress={turnOn} loading={busy === "on"} style={{ marginTop: 16 }} /> : null}
         {state === "enabled" ? (
           <Button kind="secondary" label="Send me a test alert" icon="paper-plane-outline" onPress={test} loading={busy === "test"} style={{ marginTop: 16 }} />
+        ) : null}
+        {state === "unsupported" ? (
+          <T style={{ marginTop: 12 }}>
+            {web
+              ? "Alerts work in the app on your Home Screen (opened from your live website address, starting with https). They can't work on this test link."
+              : "Alerts need a real phone or tablet."}
+          </T>
         ) : null}
         {state === "blocked" ? (
           <T style={{ marginTop: 12 }}>
