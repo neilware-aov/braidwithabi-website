@@ -19,7 +19,9 @@ Online booking for a one-person braiding business. There are two parts, and neit
 6. At any time, Abi can **cancel** an appointment (the client is emailed), **delete** it, or **mark it done**.
 7. Clients can cancel, or move their appointment once, from the link in their email. Moving it is allowed up to 48 hours before; that limit can be changed in the app.
 
-How the owner app connects to the website: the app has a private key built in, which must match `OWNER_KEY` on the website. Treat that key, and the owner app's web address, like a password.
+How the owner app connects to the website: it sends a private key that must match `OWNER_KEY` on the website. The key is never stored in this repository. On the iPhone, Abi opens a private **setup link** once. On the Android tablet, the key is built into the APK from a hidden Expo setting. See **Security** below.
+
+All email uses one address: **services@braidwithabi.ca**. Emails are sent from it, client replies come back to it, and Abi's "new booking" emails arrive there.
 
 ---
 
@@ -34,6 +36,7 @@ cd owner-app && npm install && npx expo start --web --host lan   # http://localh
 - **Emails:** with no `RESEND_API_KEY`, emails are saved as files in `website/.email-previews/`. Open them in a browser.
 - **Reminders:** they're checked every 5 minutes while the site is running.
 - **Phone alerts:** they only work on the live https address, not on a local test link.
+- **Connecting the owner app:** open `http://localhost:8081/#key=<OWNER_KEY from website/.env.local>` once.
 
 ---
 
@@ -47,8 +50,8 @@ Buy **braidwithabi.ca**, for example from Namecheap, Cloudflare or GoDaddy, and 
   - If that link doesn't show the free plan, open the pricing page at https://www.zoho.com/mail/zohomail-pricing.html and choose **Forever Free**.
   - Choose the option to use a domain you already own.
 - Add the DNS records Zoho shows you at your registrar: verification TXT, MX, SPF and DKIM.
-- Create the mailbox **hello@braidwithabi.ca**. Abi can read it in the Zoho Mail phone app.
-- Optional: add the alias **payments@braidwithabi.ca** and register it for Interac e-Transfer **Autodeposit** at Abi's bank.
+- Create one mailbox, **services@braidwithabi.ca**. No other addresses or aliases are needed. Abi can read it in the Zoho Mail phone app.
+- Register **services@braidwithabi.ca** for Interac e-Transfer **Autodeposit** at Abi's bank, so deposits arrive without a security question.
 
 ### 3. Resend (free: 3,000 emails/month) for sending emails
 - At resend.com, add the domain `braidwithabi.ca` and add the DNS records it shows (on the `send.` subdomain).
@@ -58,7 +61,10 @@ Buy **braidwithabi.ca**, for example from Namecheap, Cloudflare or GoDaddy, and 
 1. Create a project at supabase.com in the region **Canada (Central)**. Save the database password.
 2. Click **Connect** and copy the **Transaction pooler** URI (port 6543). Put the database password in place of `[YOUR-PASSWORD]`. This is `DATABASE_URL`.
 
-You don't need to run any SQL. The tables and a starter style menu are created automatically on the first visit. The website also schedules the reminder check every 15 minutes inside Supabase.
+You don't need to run any SQL. On the first visit, the website automatically:
+- creates the tables and a starter style menu
+- locks the tables so Supabase's public Data API can't read them
+- schedules the reminder check every 15 minutes inside Supabase
 
 ### 5. Website on Vercel
 1. In Vercel, choose **Add New → Project**, import this GitHub repo and set **Root Directory = `website`**.
@@ -70,10 +76,8 @@ You don't need to run any SQL. The tables and a starter style menu are created a
    | `DATABASE_URL` | the Supabase pooler URI from step 4 |
    | `OWNER_KEY` | a long random text, e.g. from `node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"` |
    | `RESEND_API_KEY` | from step 3 |
-   | `EMAIL_FROM` | `Braid with Abi <bookings@braidwithabi.ca>` |
-   | `EMAIL_REPLY_TO`, `OWNER_EMAIL` | `hello@braidwithabi.ca` |
+   | `BUSINESS_EMAIL` | `services@braidwithabi.ca` |
    | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | create a new pair with `npm run vapid` in `website/` |
-   | `VAPID_SUBJECT` | `mailto:hello@braidwithabi.ca` |
 
 3. Deploy. Then go to **Settings → Domains**, add `braidwithabi.ca` and `www.braidwithabi.ca`, and create the records Vercel shows at your registrar.
 4. Open the site once so the tables are created.
@@ -82,26 +86,31 @@ You don't need to run any SQL. The tables and a starter style menu are created a
 Install the Expo tools once with `npm install -g eas-cli`, then run `eas login`. After that, from `owner-app/`:
 
 1. Run `eas init` to link the project to your Expo account.
-2. Put the same values in `owner-app/.env` (used for the iPhone web app) and in `owner-app/eas.json → build.preview.env` (used for the Android APK):
-   ```
-   EXPO_PUBLIC_SITE_URL=https://braidwithabi.ca
-   EXPO_PUBLIC_OWNER_KEY=<same as OWNER_KEY in Vercel>
-   EXPO_PUBLIC_VAPID_PUBLIC_KEY=<same as VAPID_PUBLIC_KEY in Vercel>
-   ```
-   Keep this GitHub repo **private**, because `eas.json` holds the key.
+2. Create `owner-app/.env` from `owner-app/.env.example`. It holds the site address and the VAPID **public** key, neither of which is secret. **Never put `OWNER_KEY` in `.env`, `eas.json` or any other file in this repo.**
 
 **iPhone (web app):**
 1. Run `npm run deploy:web`. The first time, it asks you to pick a name, for example `braidwithabi-owner.expo.app`.
-2. On Abi's iPhone (iOS 16.4 or newer):
-   1. Open that address in **Safari**.
-   2. Tap **Share → Add to Home Screen**.
+2. Make Abi's private **setup link**: the app address, then `#key=`, then the `OWNER_KEY` from Vercel. For example:
+   `https://braidwithabi-owner.expo.app/#key=PASTE_OWNER_KEY_HERE`
+   Send it to Abi privately, for example by text, and don't post it anywhere.
+3. On Abi's iPhone (iOS 16.4 or newer):
+   1. Open the setup link in **Safari**.
+   2. Tap **Share → Add to Home Screen**. The icon remembers the key.
    3. Open the app from the Home Screen.
    4. Go to **Settings → Phone alerts → Turn on alerts**, then tap **Send me a test alert**.
 
 **Android tablet (APK):**
-1. Create a Firebase project. Add an Android app with the package `ca.braidwithabi.owner`, download `google-services.json` into `owner-app/`, and add `"googleServicesFile": "./google-services.json"` under `android` in `app.json`.
-2. In Firebase, go to **Project settings → Service accounts** and generate a key. Upload it with `eas credentials` → Android → *FCM V1 service account key*.
-3. Run `npm run build:apk` and open the download link on the tablet. Allow "install unknown apps", install it, then turn on alerts under **Settings → Phone alerts**.
+1. Store the key as a hidden Expo setting. It's built into the APK without ever being saved in this repo:
+   ```bash
+   eas env:create --name EXPO_PUBLIC_OWNER_KEY --value "<OWNER_KEY from Vercel>" --environment preview --visibility sensitive
+   ```
+2. Create a Firebase project and add an Android app with the package `ca.braidwithabi.owner`. Download `google-services.json` into `owner-app/` (it's git-ignored), then upload it as a hidden Expo file:
+   ```bash
+   eas env:create --name GOOGLE_SERVICES_JSON --type file --value ./google-services.json --environment preview --visibility secret
+   ```
+3. In Firebase, go to **Project settings → Service accounts** and generate a key. Upload it with `eas credentials` → Android → *FCM V1 service account key*.
+   Never commit the service-account file (it's git-ignored).
+4. Run `npm run build:apk` and open the download link on the tablet. Allow "install unknown apps", install it, then turn on alerts under **Settings → Phone alerts**.
 
 ### 7. Before telling clients
 - [ ] Rewrite the placeholder text in `website/src/lib/content.ts` with Abi. It covers the about section, area, policies, and the **chat links** (WhatsApp, Instagram, TikTok, Messenger, Snapchat). Leave a link empty (`""`) to hide that button.
@@ -123,6 +132,31 @@ create extension if not exists pg_net with schema extensions;
 select cron.schedule('braidwithabi-reminders', '*/15 * * * *',
   $$select net.http_get(url := 'https://braidwithabi.ca/api/reminders')$$);
 ```
+
+## Security
+
+This repository is public, so it contains **no secrets**. Every key lives only in Vercel, in Expo's hidden environment variables, or in local `.env` files, which are git-ignored.
+
+| What | Where it lives | If it leaks |
+|---|---|---|
+| `OWNER_KEY` | Vercel, Expo (`--visibility sensitive`), Abi's devices | Someone could see and change bookings. Set a new value in Vercel, rebuild the APK, and send Abi a new setup link. The old one stops working immediately. |
+| `DATABASE_URL` (database password) | Vercel only | Full database access. Reset the database password in Supabase, then update Vercel. |
+| `RESEND_API_KEY` | Vercel only | Someone could send email as Abi. Delete the key in Resend and create a new one. |
+| `VAPID_PRIVATE_KEY` | Vercel only | Someone could send alerts to Abi's devices. Generate a new pair, update Vercel and the app, then turn alerts on again. |
+
+Already built in:
+- **Database:** Supabase's public Data API can't read the tables. Row-level security is on and public access is revoked.
+- **Spam limits:**
+  - Bookings are limited per visitor, per email address, and per day overall.
+  - Changes through a client's manage link are limited per booking.
+  - Repeated wrong owner keys are locked out for an hour.
+  - Visitors' IP addresses and emails are stored only as one-way hashes.
+- **Client links:** each client's manage link uses a random 128-bit code. It's hidden from search engines and never passed on to other sites.
+- **Browser protections:** standard security headers (no framing, nosniff, HSTS).
+
+Known, accepted:
+- **Build-tool advisories:** `npm audit` in `owner-app/` reports two advisories, `braces` and `node-forge`. Both are inside Expo's build tools, not the app on the phone, and neither has a patched release yet. Don't run `npm audit fix --force`, because it downgrades Expo by many major versions.
+- **Reminder endpoint:** `/api/reminders` is open on purpose so Supabase can call it. It only ever sends reminders that are due, each one once.
 
 ## Costs
 - **Domain:** about $15–25 a year.
