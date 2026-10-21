@@ -5,6 +5,7 @@ import { getBookingByToken, getBusy, getSettings, SlotTakenError, updateBooking 
 import { OWNER_EMAIL, sendEmail } from "@/lib/email";
 import { clientCancelled, clientRescheduled, ownerClientChange } from "@/lib/emailTemplates";
 import { firstName } from "@/lib/format";
+import { manageSpam } from "@/lib/limits";
 import { toPublicBooking } from "@/lib/publicConfig";
 import { notifyOwner } from "@/lib/push";
 
@@ -17,6 +18,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ token: str
   const { token } = await ctx.params;
   const booking = await getBookingByToken(token);
   if (!booking) return bad("Booking not found", 404);
+  if (await manageSpam(token)) return bad("Too many changes. Please try again later, or message Abi.", 429);
   const settings = await getSettings();
   const body = await req.json().catch(() => ({}));
 

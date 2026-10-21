@@ -313,6 +313,25 @@ export async function deletePushSubscription(id: string) {
   await q(`delete from push_subscriptions where id = $1`, [id]);
 }
 
+// ── Spam limits ────────────────────────────────────────────────
+
+/**
+ * Records one request under `key` and says whether there have been more than
+ * `max` in the last `minutes`. Keys never hold raw IPs or emails (see limitKey).
+ */
+export async function overLimit(key: string, max: number, minutes: number): Promise<boolean> {
+  const [{ n }] = await q<{ n: number }>(
+    `with added as (insert into hits (key) values ($1))
+     select count(*)::int + 1 as n from hits where key = $1 and at > now() - make_interval(mins => $2)`,
+    [key, minutes]
+  );
+  return n > max;
+}
+
+export async function clearOldHits() {
+  await q(`delete from hits where at < now() - interval '1 day'`);
+}
+
 // ── Small key/value notes the app keeps for itself ────────────
 
 export async function getMeta(key: string): Promise<string | null> {

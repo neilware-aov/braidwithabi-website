@@ -4,7 +4,7 @@
 // Each reminder is sent once (the booking is marked as it goes out).
 import "server-only";
 import { DateTime } from "luxon";
-import { claimReminder, getSettings, setMeta } from "./db";
+import { claimReminder, clearOldHits, getSettings, setMeta } from "./db";
 import { sendEmail } from "./email";
 import { clientReminder, clientSoon } from "./emailTemplates";
 import { firstName, fmtTime } from "./format";
@@ -45,6 +45,7 @@ export async function runReminders() {
     ]);
   }
 
+  await clearOldHits();
   await setMeta("reminders_last_run", new Date().toISOString());
   return { soon: soon.length, day: day.length };
 }

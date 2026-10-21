@@ -5,6 +5,7 @@ import { getBusy, getSettings, getStyle, insertBooking, SlotTakenError } from "@
 import { OWNER_EMAIL, sendEmail } from "@/lib/email";
 import { clientBookingReceived, manageUrl, ownerNewBooking } from "@/lib/emailTemplates";
 import { firstName } from "@/lib/format";
+import { bookingSpam } from "@/lib/limits";
 import { notifyOwner } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
@@ -36,6 +37,9 @@ export async function POST(req: NextRequest) {
   if (phone.replace(/\D/g, "").length < 10) return bad("Please enter a valid phone number.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return bad("Please enter a valid email address.");
   if (body.agree !== true) return bad("Please confirm you've read the policies.");
+  if (await bookingSpam(req, email)) {
+    return bad("Too many booking attempts. Please try again later, or message Abi directly.", 429);
+  }
 
   const settings = await getSettings();
   if (!settings.accepting_bookings) return bad("Online booking is paused right now. Please message Abi directly.");

@@ -27,6 +27,7 @@ import {
 } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
 import { clientBookingReceived, clientCancelled, clientDepositReceived } from "@/lib/emailTemplates";
+import { badKeySpam } from "@/lib/limits";
 import { notifyOwner } from "@/lib/push";
 import type { Booking, Style } from "@/lib/types";
 
@@ -57,7 +58,11 @@ type Ctx = { params: Promise<{ path: string[] }> };
 
 async function handle(req: NextRequest, ctx: Ctx) {
   if (!process.env.OWNER_KEY) return fail("OWNER_KEY is not set on the website.", 500);
-  if (!authorised(req)) return fail("This app isn't connected to your website (wrong key).", 401);
+  if (!authorised(req)) {
+    // Slow down anyone guessing keys.
+    if (await badKeySpam(req)) return fail("Too many attempts. Try again later.", 429);
+    return fail("This app isn't connected to your website (wrong key).", 401);
+  }
 
   const { path } = await ctx.params;
   const [resource, id, sub] = path;

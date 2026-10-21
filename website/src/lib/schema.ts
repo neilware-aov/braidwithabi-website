@@ -81,6 +81,13 @@ create table if not exists meta (
   value text not null
 );
 
+-- Recent requests, for simple limits against spam (kept for a day).
+create table if not exists hits (
+  key text not null,
+  at  timestamptz not null default now()
+);
+create index if not exists hits_key_at_idx on hits (key, at);
+
 -- Supabase publishes every table in "public" through its Data API. Row-level
 -- security with no policies shuts that door completely; the website itself
 -- connects as the tables' owner, which RLS doesn't apply to.
@@ -91,11 +98,12 @@ alter table time_off           enable row level security;
 alter table bookings           enable row level security;
 alter table push_subscriptions enable row level security;
 alter table meta               enable row level security;
+alter table hits               enable row level security;
 
 do $$
 begin
   if exists (select 1 from pg_roles where rolname = 'anon') then
-    revoke all on settings, styles, style_photos, time_off, bookings, push_subscriptions, meta
+    revoke all on settings, styles, style_photos, time_off, bookings, push_subscriptions, meta, hits
       from anon, authenticated;
   end if;
 end $$;
