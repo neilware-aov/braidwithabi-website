@@ -1,0 +1,9 @@
+node_modules
+.next
+.env*.local
+.env
+.vercel
+.email-previews
+*.tsbuildinfo
+next-env.d.ts
+.data
