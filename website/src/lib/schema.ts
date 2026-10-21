@@ -80,6 +80,25 @@ create table if not exists meta (
   key   text primary key,
   value text not null
 );
+
+-- Supabase publishes every table in "public" through its Data API. Row-level
+-- security with no policies shuts that door completely; the website itself
+-- connects as the tables' owner, which RLS doesn't apply to.
+alter table settings           enable row level security;
+alter table styles             enable row level security;
+alter table style_photos       enable row level security;
+alter table time_off           enable row level security;
+alter table bookings           enable row level security;
+alter table push_subscriptions enable row level security;
+alter table meta               enable row level security;
+
+do $$
+begin
+  if exists (select 1 from pg_roles where rolname = 'anon') then
+    revoke all on settings, styles, style_photos, time_off, bookings, push_subscriptions, meta
+      from anon, authenticated;
+  end if;
+end $$;
 `;
 
 /** A starting menu so the site isn't empty on day one — Abi edits it in the app. */
