@@ -29,6 +29,14 @@ function stored(): string {
 let key = fromAddress() || stored();
 if (key) save(key);
 
+// The setup link opened while the app is already showing (same page, new "#key=…").
+if (hasWindow) {
+  window.addEventListener("hashchange", () => {
+    const k = fromAddress();
+    if (k && k !== key) setOwnerKey(k);
+  });
+}
+
 function save(k: string) {
   try {
     localStorage.setItem(STORE, k);
