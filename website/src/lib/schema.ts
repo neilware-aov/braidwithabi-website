@@ -88,6 +88,11 @@ create table if not exists hits (
 );
 create index if not exists hits_key_at_idx on hits (key, at);
 
+-- Repairs JSON saved as text by an early version (it was encoded twice).
+update styles set variants = (variants #>> '{}')::jsonb where jsonb_typeof(variants) = 'string';
+update settings set data = (data #>> '{}')::jsonb where jsonb_typeof(data) = 'string';
+update settings set data = '{}'::jsonb where jsonb_typeof(data) <> 'object';
+
 -- Supabase publishes every table in "public" through its Data API. Row-level
 -- security with no policies shuts that door completely; the website itself
 -- connects as the tables' owner, which RLS doesn't apply to.
@@ -197,7 +202,7 @@ export async function seedStarterMenu(q: Query) {
     for (const s of STARTER_MENU) {
       await q(
         `insert into styles (name, description, image_url, duration_minutes, price, variants, sort_order)
-         values ($1, $2, $3, $4, $5, $6::jsonb, $7)`,
+         values ($1, $2, $3, $4, $5, $6::text::jsonb, $7)`,
         [s.name, s.description, s.image, s.minutes, s.price, JSON.stringify(s.variants), order++]
       );
     }

@@ -45,7 +45,7 @@ export async function getSettings(): Promise<Settings> {
 export async function saveSettings(patch: Partial<Settings>): Promise<Settings> {
   const allowed = Object.keys(DEFAULT_SETTINGS).filter((k) => k !== "timezone");
   const clean = Object.fromEntries(Object.entries(patch).filter(([k]) => allowed.includes(k)));
-  await q(`update settings set data = data || $1::jsonb, updated_at = now() where id = 1`, [JSON.stringify(clean)]);
+  await q(`update settings set data = data || $1::text::jsonb, updated_at = now() where id = 1`, [JSON.stringify(clean)]);
   return getSettings();
 }
 
@@ -79,7 +79,7 @@ export async function getStyle(id: string): Promise<Style | null> {
 export async function saveStyle(id: string | null, data: Partial<Style>): Promise<Style> {
   const entries = STYLE_FIELDS.filter((k) => k in data).map((k) => [k, data[k]] as const);
   const value = (k: string, v: unknown) => (k === "variants" ? JSON.stringify(v ?? []) : v);
-  const cast = (k: string) => (k === "variants" ? "::jsonb" : "");
+  const cast = (k: string) => (k === "variants" ? "::text::jsonb" : "");
   if (id) {
     if (!entries.length) return (await getStyle(id))!;
     const sets = entries.map(([k], i) => `${k} = $${i + 2}${cast(k)}`).join(", ");
