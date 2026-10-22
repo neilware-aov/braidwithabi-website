@@ -9,3 +9,6 @@ node_modules
 
 # The original brief
 Claude Prompt.txt
+
+# Production keys (on this computer only, never pushed)
+PRODUCTION-KEYS.txt
