@@ -14,7 +14,7 @@ export class SlotTakenError extends Error {
 
 export const DEFAULT_SETTINGS: Settings = {
   timezone: "America/Toronto",
-  etransfer_email: "services@braidwithabi.ca",
+  etransfer_email: "nadia-karen@braidwithabi.ca",
   default_deposit: 50,
   deposit_hold_hours: 24,
   blow_dry_price: 25,

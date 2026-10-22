@@ -5,7 +5,7 @@ import { Resend } from "resend";
 
 // One address for everything: emails are sent from it, client replies go to
 // it, and Abi's "new booking" emails arrive there.
-export const BUSINESS_EMAIL = process.env.BUSINESS_EMAIL || "services@braidwithabi.ca";
+export const BUSINESS_EMAIL = process.env.BUSINESS_EMAIL || "nadia-karen@braidwithabi.ca";
 const FROM = `Braid with Abi <${BUSINESS_EMAIL}>`;
 const REPLY_TO = BUSINESS_EMAIL;
 

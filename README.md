@@ -21,7 +21,7 @@ Online booking for a one-person braiding business. There are two parts, and neit
 
 How the owner app connects to the website: it sends a private key that must match `OWNER_KEY` on the website. The key is never stored in this repository. On the iPhone, Abi opens a private **setup link** once. On the Android tablet, the key is built into the APK from a hidden Expo setting. See **Security** below.
 
-All email uses one address: **services@braidwithabi.ca**. Emails are sent from it, client replies come back to it, and Abi's "new booking" emails arrive there.
+All email uses one address: **nadia-karen@braidwithabi.ca**. Emails are sent from it, client replies come back to it, and Abi's "new booking" emails arrive there.
 
 ---
 
@@ -50,8 +50,8 @@ Buy **braidwithabi.ca**, for example from Namecheap, Cloudflare or GoDaddy, and 
   - If that link doesn't show the free plan, open the pricing page at https://www.zoho.com/mail/zohomail-pricing.html and choose **Forever Free**.
   - Choose the option to use a domain you already own.
 - Add the DNS records Zoho shows you at your registrar: verification TXT, MX, SPF and DKIM.
-- Create one mailbox, **services@braidwithabi.ca**. No other addresses or aliases are needed. Abi can read it in the Zoho Mail phone app.
-- Register **services@braidwithabi.ca** for Interac e-Transfer **Autodeposit** at Abi's bank, so deposits arrive without a security question.
+- Create one mailbox, **nadia-karen@braidwithabi.ca**. No other addresses or aliases are needed. Abi can read it in the Zoho Mail phone app.
+- Register **nadia-karen@braidwithabi.ca** for Interac e-Transfer **Autodeposit** at Abi's bank, so deposits arrive without a security question.
 
 ### 3. Resend (free: 3,000 emails/month) for sending emails
 - At resend.com, add the domain `braidwithabi.ca` and add the DNS records it shows (on the `send.` subdomain).
@@ -76,7 +76,7 @@ You don't need to run any SQL. On the first visit, the website automatically:
    | `DATABASE_URL` | the Supabase pooler URI from step 4 |
    | `OWNER_KEY` | a long random text, e.g. from `node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"` |
    | `RESEND_API_KEY` | from step 3 |
-   | `BUSINESS_EMAIL` | `services@braidwithabi.ca` |
+   | `BUSINESS_EMAIL` | `nadia-karen@braidwithabi.ca` |
    | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` | create a new pair with `npm run vapid` in `website/` |
 
 3. Deploy. Then go to **Settings → Domains**, add `braidwithabi.ca` and `www.braidwithabi.ca`, and create the records Vercel shows at your registrar.
