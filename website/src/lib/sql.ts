@@ -22,11 +22,33 @@ function clean<T>(rows: Row[]): T[] {
   return rows as T[];
 }
 
+/**
+ * Splits the connection string ourselves, so a password with symbols
+ * (% @ # / ? …) works as pasted — no need to percent-encode it.
+ * An already-encoded password (e.g. %40 for @) is decoded as usual.
+ */
+export function parseDatabaseUrl(url: string) {
+  const m = /^postgres(?:ql)?:\/\/([^:@/]+):(.*)@([^@/?#:]+)(?::(\d+))?(?:\/([^?#]*))?/.exec(url.trim());
+  if (!m) return null;
+  const [, user, pass, host, port, db] = m;
+  const decode = (s: string) => {
+    try {
+      return decodeURIComponent(s);
+    } catch {
+      return s;
+    }
+  };
+  return { host, port: Number(port || 5432), database: decode(db || "postgres"), username: decode(user), password: decode(pass) };
+}
+
 async function connect(): Promise<Driver> {
   const url = process.env.DATABASE_URL;
   if (url) {
     const { default: postgres } = await import("postgres");
-    const sql = postgres(url, {
+    const parts = parseDatabaseUrl(url);
+    if (!parts) throw new Error("DATABASE_URL doesn't look right. Copy the Transaction pooler URI from Supabase → Connect (see README).");
+    const sql = postgres({
+      ...parts,
       prepare: false, // required by Supabase's transaction pooler
       max: 3,
       idle_timeout: 20,
