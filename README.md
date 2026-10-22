@@ -59,7 +59,14 @@ Buy **braidwithabi.ca**, for example from Namecheap, Cloudflare or GoDaddy, and 
 
 ### 4. Supabase (free) for the database
 1. Create a project at supabase.com in the region **Canada (Central)**. Save the database password.
-2. Click **Connect** and copy the **Transaction pooler** URI (port 6543). Put the database password in place of `[YOUR-PASSWORD]`. This is `DATABASE_URL`.
+2. Click **Connect** at the top. It opens on the **App Frameworks** tab, which shows `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. **Ignore those. This site doesn't use them.** Instead:
+   1. Switch to the **Connection String** tab.
+   2. Set **Type: URI** and **Method: Transaction pooler**.
+   3. Copy the address. It looks like `postgresql://postgres.abcdefgh:[YOUR-PASSWORD]@aws-0-ca-central-1.pooler.supabase.com:6543/postgres`.
+   4. Replace `[YOUR-PASSWORD]` (including the brackets) with the database password from step 1.
+
+   The result is `DATABASE_URL`. It contains the database password, so only paste it into Vercel.
+   Forgot the password? Go to **Project Settings → Database → Reset database password**.
 
 You don't need to run any SQL. On the first visit, the website automatically:
 - creates the tables and a starter style menu
