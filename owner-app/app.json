@@ -66,7 +66,10 @@
       "policy": "appVersion"
     },
     "extra": {
-      "eas": {}
-    }
+      "eas": {
+        "projectId": "97c282e5-7236-4d36-baa7-388f602cdebb"
+      }
+    },
+    "owner": "neilware"
   }
 }
