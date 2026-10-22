@@ -44,7 +44,8 @@ const json = (data: unknown, status = 200) => NextResponse.json(data, { status, 
 const fail = (error: string, status = 400) => json({ error }, status);
 
 function authorised(req: NextRequest) {
-  const key = process.env.OWNER_KEY ?? "";
+  // Ignores spaces or quotes pasted around the value in Vercel.
+  const key = (process.env.OWNER_KEY ?? "").trim().replace(/^(["'])(.*)\1$/, "$2");
   const given = req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "";
   if (key.length < 16 || given.length !== key.length) return false;
   return timingSafeEqual(Buffer.from(given), Buffer.from(key));
