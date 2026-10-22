@@ -12,7 +12,7 @@
       },
       "env": {
         "EXPO_PUBLIC_SITE_URL": "https://braidwithabi.ca",
-        "EXPO_PUBLIC_VAPID_PUBLIC_KEY": "BMDZPUeze6jE-hgQTjY_d65w41G-AZWijZsKR2HvW7uZuGFKHuTJLk1VFxOLy0bLeKDc0qOVTsHUSnl_2JdFfds"
+        "EXPO_PUBLIC_VAPID_PUBLIC_KEY": "BG9O_z_i1YOanpyfOUuQ1HtVWDIkD3RpFwkIpjd_po5VrBiQK25AyjFlh8nETzcWCYpSl7uGOZIxyQG6yE4IfNs"
       },
       "environment": "preview"
     }
